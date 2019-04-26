@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+body {
+  background-color: #F1F3F3    
+}
+
+h1 {
+  text-align: center
+}
+.axis {
+    font: 14px sans-serif;
+}
+
+img {
+    max-width:100%;
+}
+
+#header {
+  z-index:9999 !important;
+  width:100%;
+  height:80px;
+  background-color:#32343d;
+  color:#fff;
+}
+.container_12 {
+  margin-right:auto;
+  margin-left:auto;
+  width:100%;
+}
+
+.grid_3 {
+  display:block;
+  padding:0 0 20px;
+  height:300px;
+}
+
+.logo {
+  position:absolute;
+    top:10px;
+    z-index:9999;
+  width:220px; /* 220px / 940px */
+    height:115px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #D4D8DA;
+  stroke-width: 2px;
+  shape-rendering: crispEdges;
+}
+
+.area {
+      fill: steelblue;
+      opacity: 0.3;
+}
+
+.areaa {
+      fill: red;
+      opacity: 0.3;
+
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2px;
+}
+
+.linea {
+  fill: none;
+  stroke: red;
+  stroke-width: 2px;
+}
+
+.focus circle {
+  fill: #F1F3F3;
+  stroke: steelblue;
+  stroke-width: 2px;
+}
+
+.focusa circle {
+  fill: #F1F3F3;
+  stroke: red;
+  stroke-width: 2px;
+}
+  
+.hover-line {
+  stroke: #000000;
+  stroke-width: 1px;
+  stroke-dasharray: 3,3;
+}
+
+</style>
+
+<header id="header">
+  <div class="container_12">
+    <div class="grid_3">
+      &nbsp;
+      <div class="logo">
+        <a href="https://assist.ncsu.edu" title="ASSIST"><img src="https://assist.ncsu.edu/wordpress/wp-content/themes/assist/images/assist-logo.png"></a>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<body onload="JavaScript:timedRefresh(30000);" >
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+
+  <div style = "width:960px; margin:0 auto;">
+    <h1>Daily HR at 30min Intervals</h1>
+    <svg width="960" height="500" id="svg1"></svg>
+  </div>
+  <div style = "width:960px; margin:0 auto;">
+    <h1>5min HR at 5s Intervals</h1>
+
+    <svg width="960" height="500" id="svg2"></svg>
+  </div>
+<script>
+
+function timedRefresh(timeoutPeriod) {
+    setTimeout("location.reload(true);",timeoutPeriod);
+}
+// First chart showing day data
+var svg1 = d3.select("#svg1"),
+    margin = {top: 20, right: 60, bottom: 50, left: 60},
+    width = +svg1.attr("width") - margin.left - margin.right,
+    height = +svg1.attr("height") - margin.top - margin.bottom;
+
+
+var bisectDate = d3.bisector(function(d) { return d.ID; }).left;
+
+var x = d3.scaleLinear().range([0, width]);
+var y = d3.scaleLinear().range([height, 0]);
+var ya = d3.scaleLinear().range([height, 0]);
+
+var line = d3.line()
+    .x(function(d) { return x(d.ID); })
+    .y(function(d) { return y(d.MEAN_HR); })
+    .curve(d3.curveCardinal)
+
+var linea = d3.line()
+    .x(function(d) { return x(d.ID); })
+    .y(function(d) { return ya(d.MEAN_ACT); })
+    .curve(d3.curveCardinal)
+
+var area = d3.area()
+    .x(function(d) {return x(d.ID); }) 
+    .y0(function(d) { return y(d.MEAN_HR + d.VAR_HR); })
+    .y1(function(d) { return y(d.MEAN_HR - d.VAR_HR); })
+    .curve(d3.curveCardinal);
+
+var areaa = d3.area()
+    .x(function(d) {return x(d.ID); }) 
+    .y0(function(d) { return ya(d.MEAN_ACT + d.VAR_ACT); })
+    .y1(function(d) { return ya(d.MEAN_ACT - d.VAR_ACT); })
+    .curve(d3.curveCardinal);
+
+var g = svg1.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var url = window.location.href + "dataDay"
+d3.json(url, function(error, data) {
+    if (error) throw error;
+    
+    data.forEach(function(d) {
+      d.ID = +d.ID;
+      d.MEAN_HR = +d.MEAN_HR;
+      d.VAR_HR = +d.VAR_HR;
+      d.MEAN_ACT = +d.MEAN_ACT;
+      d.VAR_ACT = +d.VAR_ACT;
+    });
+
+    x.domain(d3.extent(data, function(d) { return d.ID; }));
+    y.domain([0, d3.max(data, function(d) { return d.MEAN_HR ;})]);
+    ya.domain([0, 10]);//d3.max(data, function(d) { return d.MEAN_ACT ; })]);
+
+    // g.append("text")
+    //     .attr("x", (width / 2))             
+    //     .attr("y", 0 )
+    //     .attr("text-anchor", "middle")  
+    //     .style("font-size", "16px")  
+    //     .text("Daily HR at 30min Intervals")
+    
+
+
+    g.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x))
+      .append("text")
+        .attr("class", "axis-title")
+        .attr("x", (width / 2))             
+        .attr("y", 0 )
+        .attr("dy", "2.5em")
+        .attr("text-anchor", "middle")  
+        .attr("fill", "#5D6971")
+        // .style("font-size", "14px")  
+        .text("Interval ID");
+
+    g.append("g")
+        .attr("class", "axis axis--y")
+        .attr("fill", "steelblue")
+        .call(d3.axisLeft(y))
+      .append("text")
+        .attr("class", "axis-title")
+        .attr("transform", "rotate(-90)")
+        .attr("y", (0))
+        .attr("dy", "-2.75em")
+        .style("text-anchor", "end")
+        .style("font-size", "16px") 
+        .attr("fill", "steelblue")
+        .text("Mean Heart Rate with std. (bpm)");
+
+    g.append("g")
+        .attr("class", "axis axis--y")
+        .attr("transform", "translate( " + width + ", 0 )")
+        .attr("fill", "red")
+        .call(d3.axisRight(ya))
+      .append("text")
+        .attr("class", "axis-title")
+        .attr("transform", "rotate(-90)")
+        .attr("y", (0))
+        .attr("dy", "3.25em")
+        .style("text-anchor", "end")
+        .style("font-size", "16px") 
+        .attr("fill", "red")
+        .text("Mean Activity Index with std.");
+
+    g.append("path")
+        .data([data])
+        .attr("class", "line")
+        .attr("d", line);
+
+
+    g.append("path")
+        .data([data])
+        .attr("class", "linea")
+        .attr("d", linea);     
+
+    var drawarea = g.append("path")
+        .data([data])
+        .attr("class", "area")
+        .attr("d", area); 
+
+    var drawareaa = g.append("path")
+        .data([data])
+        .attr("class", "areaa")
+        .attr("d", areaa); 
+
+    var focus = g.append("g")
+        .attr("class", "focus")
+        .style("display", "none");
+
+    var focusa = g.append("g")
+        .attr("class", "focusa")
+        .style("display", "none");
+
+    focus.append("line")
+        .attr("class", "x-hover-line hover-line")
+        .attr("y1", 0 )
+        .attr("y2", height);
+
+    focus.append("line")
+        .attr("class", "y-hover-line hover-line")
+        .attr("x1", 0)
+        .attr("x2", width);
+
+    focusa.append("line")
+        .attr("class", "x-hover-line hover-line")
+        .attr("y1", 0 )
+        .attr("y2", height);
+
+    focusa.append("line")
+        .attr("class", "y-hover-line hover-line")
+        .attr("x1", 0)
+        .attr("x2", width);
+
+    focus.append("circle")
+        .attr("r", 5);
+
+
+    focusa.append("circle")
+        .attr("r", 5);
+
+    focus.append("line")
+        .attr("class", "x-hover-line hover-line")
+        .attr("y1", 0 )
+        .attr("y2", height);
+
+    text1 = focus.append("text")
+        .attr("x", 5)
+        .attr("dy", ".9em");
+
+    text2 = focus.append("text")
+        .attr("x", 5)
+        .attr("dy", "1.8em");
+
+
+    text1a = focusa.append("text")
+        .attr("x", -5)
+        .attr("dy", ".9em")
+        .style("text-anchor", "end");
+
+    text2a = focusa.append("text")
+        .attr("x", -5)
+        .attr("dy", "1.8em")
+        .style("text-anchor", "end");
+
+    svg1.append("rect")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .attr("class", "overlay")
+        .attr("width", width)
+        .attr("height", height)
+        .on("mouseover", function() { 
+          focus.style("display", null);
+          focusa.style("display", null); 
+        })
+        .on("mouseout", function() { 
+          focus.style("display", "none"); 
+          focusa.style("display", "none"); 
+        })
+        .on("mousemove", mousemove);
+
+    function mousemove() {
+      var x0 = x.invert(d3.mouse(this)[0]),
+          i = bisectDate(data, x0, 1),
+          d0 = data[i - 1],
+          d1 = data[i],
+          d = x0 - d0.ID > d1.ID - x0 ? d1 : d0;
+      focus.attr("transform", "translate(" + x(d.ID) + "," + y(d.MEAN_HR) + ")");
+      focusa.attr("transform", "translate(" + x(d.ID) + "," + ya(d.MEAN_ACT) + ")");
+      text1.text("HR: " + d.MEAN_HR).attr("class", "axis");
+      text2.text("STD: " + d.VAR_HR).attr("class", "axis");
+      focus.select(".x-hover-line").attr("y2", height + margin.top);
+      text1a.text("Act: " + d.MEAN_ACT).attr("class", "axis");
+      text2a.text("STD: " + d.VAR_ACT).attr("class", "axis");
+      // focus.select(".x-hover-line").attr("y2", height + margin.top);
+      focusa.select(".y-hover-line").attr("x2", width);
+      focus.select(".y-hover-line").attr("x1", -x(d.ID));
+      focus.select(".y-hover-line").attr("x2", 0);
+      // focus.select(".y-hover-line").attr("x2", width + width);
+    }
+});
+
+
+// Build the second chart for 5 minute data
+var svg2 = d3.select("#svg2"),
+    margin = {top: 20, right: 75, bottom: 50, left: 50},
+    width = +svg2.attr("width") - margin.left - margin.right,
+    height = +svg2.attr("height") - margin.top - margin.bottom;
+
+
+var bisectDate = d3.bisector(function(d) { return d.ID; }).left;
+
+var x2 = d3.scaleLinear().range([0, width]);
+var y2 = d3.scaleLinear().range([height, 0])
+var ya2 = d3.scaleLinear().range([height, 0]);
+
+var line2 = d3.line()
+    .x(function(d) { return x2(d.ID); })
+    .y(function(d) { return y2(d.MEAN_HR); })
+    .curve(d3.curveCardinal)
+
+var linea2 = d3.line()
+    .x(function(d) { return x2(d.ID); })
+    .y(function(d) { return ya2(d.MEAN_ACT); })
+    .curve(d3.curveCardinal)
+
+var area2 = d3.area()
+    .x(function(d) {return x2(d.ID); }) 
+    .y0(function(d) { return y2(d.MEAN_HR + d.VAR_HR); })
+    .y1(function(d) { return y2(d.MEAN_HR - d.VAR_HR); })
+    .curve(d3.curveCardinal);
+
+var areaa2 = d3.area()
+    .x(function(d) {return x2(d.ID); }) 
+    .y0(function(d) { return ya2(d.MEAN_ACT + d.VAR_ACT); })
+    .y1(function(d) { return ya2(d.MEAN_ACT - d.VAR_ACT); })
+    .curve(d3.curveCardinal);
+
+var g2 = svg2.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var url = window.location.href + "dataMin"
+d3.json(url, function(error, data) {
+    if (error) throw error;
+    data.reverse();
+    data.forEach(function(d) {
+      d.ID = +d.ID;
+      d.MEAN_HR = +d.MEAN_HR;
+      d.VAR_HR = +d.VAR_HR;
+      d.MEAN_ACT = +d.MEAN_ACT;
+      d.VAR_ACT = +d.VAR_ACT;
+    });
+
+    x2.domain(d3.extent(data, function(d) { return d.ID; }));
+    y2.domain([0, d3.max(data, function(d) { return d.MEAN_HR + margin.top; })]);
+    ya2.domain([0, 10]);//d3.max(data, function(d) { return d.MEAN_ACT; })]);
+
+    // g2.append("text")
+    //     .attr("x", (width / 2))             
+    //     .attr("y", 0 )
+    //     .attr("text-anchor", "middle")  
+    //     .style("font-size", "16px")  
+    //     .text("5 minute HR at 30s Intervals")
+    
+
+
+    g2.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x2))
+      .append("text")
+        .attr("class", "axis-title")
+        .attr("x", (width / 2))             
+        .attr("y", 0 )
+        .attr("dy", "2.5em")
+        .attr("text-anchor", "middle")  
+        .attr("fill", "#5D6971")
+        // .style("font-size", "14px")  
+        .text("Interval ID");
+
+    g2.append("g")
+        .attr("class", "axis axis--y")
+        .call(d3.axisLeft(y2))
+      .append("text")
+        .attr("class", "axis-title")
+        .attr("transform", "rotate(-90)")
+        .attr("y", (0))
+        .attr("dy", "-2.75em")
+        .style("text-anchor", "end")
+        .attr("fill", "#5D6971")
+        .text("Mean Heart Rate with std. (bpm)");
+
+
+    g2.append("g")
+        .attr("class", "axis axis--y")
+        .attr("transform", "translate( " + width + ", 0 )")
+        .attr("fill", "red")
+        .call(d3.axisRight(ya2))
+      .append("text")
+        .attr("class", "axis-title")
+        .attr("transform", "rotate(-90)")
+        .attr("y", (0))
+        .attr("dy", "3.25em")
+        .style("text-anchor", "end")
+        .style("font-size", "16px") 
+        .attr("fill", "red")
+        .text("Mean Activity Index with std.");
+
+    g2.append("path")
+        .data([data])
+        .attr("class", "line")
+        .attr("d", line2);
+    
+    g2.append("path")
+        .data([data])
+        .attr("class", "linea")
+        .attr("d", linea2);
+
+
+    var drawarea = g2.append("path")
+        .data([data])
+        .attr("class", "area")
+        .attr("d", area2); 
+
+    var drawareaa = g2.append("path")
+        .data([data])
+        .attr("class", "areaa")
+        .attr("d", areaa2); 
+
+    var focus2 = g2.append("g")
+        .attr("class", "focus")
+        .style("display", "none");
+
+    var focusa2 = g2.append("g")
+        .attr("class", "focusa")
+        .style("display", "none");
+
+    focus2.append("line")
+        .attr("class", "x-hover-line hover-line")
+        .attr("y1", 0 )
+        .attr("y2", height)
+        .attr("stroke", "red");
+
+    focus2.append("line")
+        .attr("class", "y-hover-line hover-line")
+        .attr("x1", 0)
+        .attr("x2", width);
+
+    focus2.append("circle")
+        .attr("r", 5);
+
+    focusa2.append("line")
+        .attr("class", "x-hover-line hover-line")
+        .attr("y1", 0 )
+        .attr("y2", height);
+
+    focusa2.append("line")
+        .attr("class", "y-hover-line hover-line")
+        .attr("x1", 0)
+        .attr("x2", width);
+
+    focusa2.append("circle")
+        .attr("r", 5);
+
+    textmin1 = focus2.append("text")
+        .attr("x", 5)
+        .attr("dy", ".9em");
+
+    textmin2 = focus2.append("text")
+        .attr("x", 5)
+        .attr("dy", "1.8em");
+
+    textmina1 = focusa2.append("text")
+        .attr("x", -5)
+        .attr("dy", ".9em")
+        .style("text-anchor", "end");
+
+    textmina2 = focusa2.append("text")
+        .attr("x", -5)
+        .attr("dy", "1.8em")
+        .style("text-anchor", "end");
+
+    svg2.append("rect")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .attr("class", "overlay")
+        .attr("width", width)
+        .attr("height", height)
+        .on("mouseover", function() { 
+          focus2.style("display", null);
+          focusa2.style("display", null); 
+        })
+        .on("mouseout", function() { 
+          focus2.style("display", "none"); 
+          focusa2.style("display", "none"); 
+        })
+        .on("mousemove", mousemove2);
+
+    function mousemove2() {
+      var x0 = x2.invert(d3.mouse(this)[0]),
+          i = bisectDate(data, x0, 1),
+          d0 = data[i - 1],
+          d1 = data[i],
+          d = x0 - d0.ID > d1.ID - x0 ? d1 : d0;
+      focus2.attr("transform", "translate(" + x2(d.ID) + "," + y2(d.MEAN_HR) + ")");
+      textmin1.text("HR: " + d.MEAN_HR).attr("class", "axis");
+      textmin2.text("STD: " + d.VAR_HR).attr("class", "axis");
+      focus2.select(".x-hover-line").attr("y2", height + margin.top);
+      focusa2.attr("transform", "translate(" + x2(d.ID) + "," + ya2(d.MEAN_ACT) + ")");
+      textmina1.text("HR: " + d.MEAN_ACT).attr("class", "axis");
+      textmina2.text("STD: " + d.VAR_ACT).attr("class", "axis");
+      focus2.select(".x-hover-line").attr("y2", height + margin.top);
+      focusa2.select(".y-hover-line").attr("x2", width);
+      focus2.select(".y-hover-line").attr("x1", -x2(d.ID));
+      focus2.select(".y-hover-line").attr("x2", 0);
+    }
+});
+
+
+</script>
