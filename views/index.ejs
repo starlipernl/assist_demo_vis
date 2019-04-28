@@ -558,7 +558,7 @@ d3.json(url, function(error, data) {
       textmin2.text("STD: " + d.VAR_HR).attr("class", "axis");
       focus2.select(".x-hover-line").attr("y2", height + margin.top);
       focusa2.attr("transform", "translate(" + x2(d.ID) + "," + ya2(d.MEAN_ACT) + ")");
-      textmina1.text("HR: " + d.MEAN_ACT).attr("class", "axis");
+      textmina1.text("ACTIVITY IDX: " + d.MEAN_ACT).attr("class", "axis");
       textmina2.text("STD: " + d.VAR_ACT).attr("class", "axis");
       focus2.select(".x-hover-line").attr("y2", height + margin.top);
       focusa2.select(".y-hover-line").attr("x2", width);
