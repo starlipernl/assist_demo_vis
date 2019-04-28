@@ -11,7 +11,7 @@ dataRouterMin.get('/', function(req, res) {
     if (err) {
         return console.log(err);
     }
-    conn.query("select 7-h.ROWNUMBER as ID, h.mean as MEAN_HR, h.var as VAR_HR, a.mean as MEAN_ACT, a.var as VAR_ACT from (select mean, var, ROW_NUMBER() OVER () rownumber from SUMMARY_DATA where data_type='hr' order by id desc limit 6) as h join (select mean, var, ROW_NUMBER() OVER () rownumber from SUMMARY_DATA where data_type='act_idx' order by id desc limit 6) as a ON h.ROWNUMBER = a.ROWNUMBER ORDER BY h.ROWNUMBER", function (errq, data) {
+    conn.query("select ((MAX(h.ROWNUMBER) OVER() - h.ROWNUMBER)*0.5) as ID, h.mean as MEAN_HR, h.var as VAR_HR, a.mean as MEAN_ACT, a.var as VAR_ACT from (select mean, var, ROW_NUMBER() OVER () rownumber from SUMMARY_DATA where data_type='hr' order by id desc limit 10) as h join (select mean, var, ROW_NUMBER() OVER () rownumber from SUMMARY_DATA where data_type='act_idx' order by id desc limit 10) as a ON h.ROWNUMBER = a.ROWNUMBER ORDER BY h.ROWNUMBER", function (errq, data) {
       if (errq) console.log(errq);
       else {
         //console.log(data);

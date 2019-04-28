@@ -120,7 +120,7 @@ img {
   </div>
 -->
   <div style = "width:960px; margin:0 auto;">
-    <h1>5min HR at 5s Intervals</h1>
+    <h1>5min HR at 30s Intervals</h1>
 
     <svg width="960" height="500" id="svg2"></svg>
   </div>
@@ -428,7 +428,7 @@ d3.json(url, function(error, data) {
         .attr("text-anchor", "middle")  
         .attr("fill", "#5D6971")
         // .style("font-size", "14px")  
-        .text("Interval ID");
+        .text("Minute");
 
     g2.append("g")
         .attr("class", "axis axis--y")
@@ -440,7 +440,7 @@ d3.json(url, function(error, data) {
         .attr("dy", "-2.75em")
         .style("text-anchor", "end")
         .attr("fill", "#5D6971")
-        .text("Mean Heart Rate with std. (bpm)");
+        .text("Energy in EKG with std. (bpm)");
 
 
     g2.append("g")
@@ -549,7 +549,7 @@ d3.json(url, function(error, data) {
 
     function mousemove2() {
       var x0 = x2.invert(d3.mouse(this)[0]),
-          i = bisectDate(data, x0, 1),
+          i = bisectDate(data, x0),
           d0 = data[i - 1],
           d1 = data[i],
           d = x0 - d0.ID > d1.ID - x0 ? d1 : d0;
