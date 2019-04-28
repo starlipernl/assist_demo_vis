@@ -17,7 +17,7 @@ app.set('view engine', 'ejs');
 
 //serve static file (index.html, images, css)
 // app.use(express.static(__dirname + '/views'));
-app.use('/dataDay', require('./routes/dataDay'));
+//app.use('/dataDay', require('./routes/dataDay'));
 app.use('/dataMin', require('./routes/dataMin'));
 
 app.get('/', function (req, res) {

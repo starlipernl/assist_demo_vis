@@ -11,7 +11,7 @@ dataRouterMin.get('/', function(req, res) {
     if (err) {
         return console.log(err);
     }
-    conn.query('select * from SUMMARY_DATA WHERE INTERVAL_LEN=30 and TRIAL_SESSION_ID=17 ORDER BY ID DESC LIMIT 6', function (errq, data) {
+    conn.query('select h.ID,h.mean as MEAN_HR, h.var as VAR_HR, a.mean as MEAN_ACT, a.var as VAR_ACT from SUMMARY_DATA as h join SUMMARY_DATA as a ON h.ID = a.ID WHERE h.INTERVAL_LEN=30 and h.TRIAL_SESSION_ID=17 ORDER BY ID DESC LIMIT 6 ', function (errq, data) {
       if (errq) console.log(errq);
       else {
         //console.log(data);

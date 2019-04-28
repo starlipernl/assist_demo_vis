@@ -113,11 +113,12 @@ img {
 
 <body onload="JavaScript:timedRefresh(30000);" >
   <script src="https://d3js.org/d3.v4.min.js"></script>
-
+<!--
   <div style = "width:960px; margin:0 auto;">
     <h1>Daily HR at 30min Intervals</h1>
     <svg width="960" height="500" id="svg1"></svg>
   </div>
+-->
   <div style = "width:960px; margin:0 auto;">
     <h1>5min HR at 5s Intervals</h1>
 
@@ -128,6 +129,7 @@ img {
 function timedRefresh(timeoutPeriod) {
     setTimeout("location.reload(true);",timeoutPeriod);
 }
+/*
 // First chart showing day data
 var svg1 = d3.select("#svg1"),
     margin = {top: 20, right: 60, bottom: 50, left: 60},
@@ -349,7 +351,7 @@ d3.json(url, function(error, data) {
       // focus.select(".y-hover-line").attr("x2", width + width);
     }
 });
-
+*/
 
 // Build the second chart for 5 minute data
 var svg2 = d3.select("#svg2"),
